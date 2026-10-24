@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STPreLab - Smart Lab Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        mono: ['DM Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'DM Sans', sans-serif; }
+        .font-mono { font-family: 'DM Mono', monospace; }
+    </style>
+</head>
+<body class="bg-[#0e1117] text-[#e8eaf0] min-h-screen transition-colors duration-200" id="appBody">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto px-4 pt-6 pb-2">
+        <div class="bg-gradient-to-br from-[#1a1f36] to-[#2d3561] rounded-2xl p-7 md:p-8 text-white shadow-lg flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">🧪 STPreLab</h1>
+                <p class="text-sm opacity-65 mt-1">Smart Lab Assistant · Chemical Prep · PCR · Cell Culture · MTT · Western Blot</p>
+            </div>
+            <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 p-2.5 rounded-xl transition text-sm">
+                🌓 เปลี่ยนธีม
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap gap-2 border-b border-[#2e3347] pb-3 mb-6">
+            <button onclick="switchTab(0)" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-[#1f2335] text-white border border-[#3a4570]">🧮 Chemical Prep</button>
+            <button onclick="switchTab(1)" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-[#9aa3bb] hover:text-white">🧬 PCR Master Mix</button>
+            <button onclick="switchTab(2)" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-[#9aa3bb] hover:text-white">🧫 Cell Seeding</button>
+            <button onclick="switchTab(3)" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-[#9aa3bb] hover:text-white">☀️ MTT & Drug</button>
+            <button onclick="switchTab(4)" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-[#9aa3bb] hover:text-white">🥞 SDS-PAGE</button>
+        </div>
+
+        <!-- ================= TAB 1: CHEMICAL PREP ================= -->
+        <div class="tab-content grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ตั้งค่าการเตรียมสาร</h3>
+                <label class="block text-sm mb-1 text-[#c9cdd8]">สารเคมี</label>
+                <select id="chemSelect" onchange="updateMW()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm mb-4 focus:outline-none focus:border-indigo-500">
+                    <option value="58.44">NaCl (Sodium Chloride) - 58.44</option>
+                    <option value="180.16">Glucose - 180.16</option>
+                    <option value="157.60">Tris-HCl - 157.60</option>
+                    <option value="292.24">EDTA - 292.24</option>
+                    <option value="40.00">NaOH (Sodium Hydroxide) - 40.00</option>
+                    <option value="custom">อื่นๆ (Custom)</option>
+                </select>
+
+                <div id="customMWDiv" class="hidden mb-4">
+                    <label class="block text-sm mb-1 text-[#c9cdd8]">MW (g/mol)</label>
+                    <input type="number" id="customMW" value="100" oninput="calcChem()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2 text-sm">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm mb-1 text-[#c9cdd8]">ความเข้มข้น</label>
+                        <input type="number" id="chemConc" value="1" step="0.1" oninput="calcChem()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1 text-[#c9cdd8]">หน่วย</label>
+                        <select id="chemConcUnit" onchange="calcChem()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm">
+                            <option value="M">M</option>
+                            <option value="mM">mM</option>
+                            <option value="µM">µM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-sm mb-1 text-[#c9cdd8]">ปริมาตร</label>
+                        <input type="number" id="chemVol" value="100" step="10" oninput="calcChem()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1 text-[#c9cdd8]">หน่วย</label>
+                        <select id="chemVolUnit" onchange="calcChem()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm">
+                            <option value="mL">mL</option>
+                            <option value="L">L</option>
+                            <option value="µL">µL</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ผลการคำนวณ</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-[#1f2335] border border-[#2e3347] p-4 rounded-xl">
+                            <span class="text-xs text-[#9aa3bb] block">กรัม (g)</span>
+                            <span id="resG" class="text-xl font-mono font-bold text-white mt-1 block">0.0000 g</span>
+                        </div>
+                        <div class="bg-[#1f2335] border border-[#2e3347] p-4 rounded-xl">
+                            <span class="text-xs text-[#9aa3bb] block">มิลลิกรัม (mg)</span>
+                            <span id="resMg" class="text-xl font-mono font-bold text-white mt-1 block">0.00 mg</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="chemInstruction" class="bg-[#29230e] border-l-4 border-amber-500 p-3 rounded-r-lg text-sm text-amber-200">
+                    💡 ชั่งสารตามจำนวนด้านบนแล้วปรับปริมาตรด้วยตัวทำละลายให้ครบตามต้องการ
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: PCR MASTER MIX ================= -->
+        <div class="tab-content hidden grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ตั้งค่าการทดลอง PCR</h3>
+                <label class="block text-sm mb-1 text-[#c9cdd8]">จำนวนตัวอย่างจริง (wells)</label>
+                <input type="number" id="pcrWells" value="10" min="1" oninput="calcPCR()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono mb-4">
+
+                <label class="block text-sm mb-1 text-[#c9cdd8]">เปอร์เซ็นต์เผื่อน้ำยา (%)</label>
+                <input type="range" id="pcrOverflow" min="0" max="30" value="10" step="5" oninput="calcPCR()" class="w-full accent-indigo-500 mb-1">
+                <span id="pcrOverflowVal" class="text-xs text-[#9aa3bb] block mb-4">เผื่อ 10%</span>
+
+                <hr class="border-[#2e3347] my-4">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-3">ปริมาตรต่อ 1 หลุม (µL)</h3>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center"><span class="text-sm">Water</span><input type="number" id="pcrWater" value="9.5" step="0.5" oninput="calcPCR()" class="w-24 bg-[#1f2335] border border-[#2e3347] rounded p-1.5 text-sm font-mono text-right"></div>
+                    <div class="flex justify-between items-center"><span class="text-sm">2X Master Mix</span><input type="number" id="pcrMix" value="12.5" step="0.5" oninput="calcPCR()" class="w-24 bg-[#1f2335] border border-[#2e3347] rounded p-1.5 text-sm font-mono text-right"></div>
+                    <div class="flex justify-between items-center"><span class="text-sm">Forward Primer</span><input type="number" id="pcrFw" value="1.0" step="0.1" oninput="calcPCR()" class="w-24 bg-[#1f2335] border border-[#2e3347] rounded p-1.5 text-sm font-mono text-right"></div>
+                    <div class="flex justify-between items-center"><span class="text-sm">Reverse Primer</span><input type="number" id="pcrRv" value="1.0" step="0.1" oninput="calcPCR()" class="w-24 bg-[#1f2335] border border-[#2e3347] rounded p-1.5 text-sm font-mono text-right"></div>
+                    <div class="flex justify-between items-center"><span class="text-sm">Template DNA</span><input type="number" id="pcrDna" value="1.0" step="0.1" oninput="calcPCR()" class="w-24 bg-[#1f2335] border border-[#2e3347] rounded p-1.5 text-sm font-mono text-right"></div>
+                </div>
+            </div>
+
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ปริมาตรรวมที่ต้องเตรียม</h3>
+                <div id="pcrResultList" class="space-y-3 divide-y divide-[#252836]">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: CELL SEEDING ================= -->
+        <div class="tab-content hidden grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ข้อมูลเซลล์และการเจือจาง</h3>
+                <label class="block text-sm mb-1 text-[#c9cdd8]">ความหนาแน่นปัจจุบัน (cells/mL)</label>
+                <input type="number" id="currDensity" value="1000000" step="50000" oninput="calcCell()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono mb-4">
+
+                <label class="block text-sm mb-1 text-[#c9cdd8]">ความหนาแน่นที่ต้องการ (cells/mL)</label>
+                <input type="number" id="targetDensity" value="50000" step="5000" oninput="calcCell()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono mb-4">
+
+                <label class="block text-sm mb-1 text-[#c9cdd8]">ปริมาตรอาหารเลี้ยงเชื้อรวม (mL)</label>
+                <input type="number" id="targetVol" value="10" step="0.5" oninput="calcCell()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono">
+            </div>
+
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ผลการคำนวณ</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-[#1f2335] border border-[#2e3347] p-4 rounded-xl">
+                            <span class="text-xs text-[#9aa3bb] block">ดูด Cell suspension</span>
+                            <span id="cellResultUl" class="text-xl font-mono font-bold text-white mt-1 block">0.0 µL</span>
+                        </div>
+                        <div class="bg-[#1f2335] border border-[#2e3347] p-4 rounded-xl">
+                            <span class="text-xs text-[#9aa3bb] block">เติม Media</span>
+                            <span id="cellResultMl" class="text-xl font-mono font-bold text-white mt-1 block">0.00 mL</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="cellMsg" class="bg-[#29230e] border-l-4 border-amber-500 p-3 rounded-r-lg text-sm text-amber-200">
+                    💡 เตรียมเซลล์และสารละลายตามสัดส่วนด้านบน
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: MTT ================= -->
+        <div class="tab-content hidden grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">เตรียม MTT Stock</h3>
+                <label class="block text-sm mb-1 text-[#c9cdd8]">ปริมาตรที่ต้องการเตรียม (mL)</label>
+                <input type="number" id="mttVol" value="10" step="1" oninput="calcMTT()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono mb-4">
+                <label class="block text-sm mb-1 text-[#c9cdd8]">ความเข้มข้น (mg/mL)</label>
+                <input type="number" id="mttConc" value="5" step="0.5" oninput="calcMTT()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono">
+            </div>
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ผลการคำนวณ</h3>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-[#1f2335] border border-[#2e3347] p-4 rounded-xl">
+                        <span class="text-xs text-[#9aa3bb] block">ชั่งผง MTT</span>
+                        <span id="mttMg" class="text-xl font-mono font-bold text-white mt-1 block">0.0 mg</span>
+                    </div>
+                    <div class="bg-[#1f2335] border border-[#2e3347] p-4 rounded-xl">
+                        <span class="text-xs text-[#9aa3bb] block">ละลายใน PBS</span>
+                        <span id="mttMl" class="text-xl font-mono font-bold text-white mt-1 block">0.0 mL</span>
+                    </div>
+                </div>
+                <div class="bg-[#2a1515] border-l-4 border-red-500 p-3 rounded-r-lg text-sm text-red-200">
+                    ⚠️ MTT ไวต่อแสงและเป็นพิษ ควรห่อฟอยล์อลูมิเนียม
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 5: SDS-PAGE ================= -->
+        <div class="tab-content hidden grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-4">ตั้งค่า Gel</h3>
+                <label class="block text-sm mb-1 text-[#c9cdd8]">เปอร์เซ็นต์ Resolving Gel</label>
+                <select id="gelPct" onchange="calcGel()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm mb-4">
+                    <option value="8">8% · โปรตีนใหญ่ (60-200 kDa)</option>
+                    <option value="10" selected>10% · โปรตีนกลาง (30-100 kDa)</option>
+                    <option value="12">12% · โปรตีนเล็ก (20-80 kDa)</option>
+                </select>
+
+                <label class="block text-sm mb-1 text-[#c9cdd8]">ความหนากระจก</label>
+                <select id="gelThick" onchange="calcGel()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm mb-4">
+                    <option value="1.0">1.0 mm</option>
+                    <option value="1.5">1.5 mm</option>
+                </select>
+
+                <label class="block text-sm mb-1 text-[#c9cdd8]">จำนวนแผ่นเจล</label>
+                <input type="number" id="gelNum" value="2" min="1" oninput="calcGel()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono mb-4">
+
+                <label class="block text-sm mb-1 text-[#c9cdd8]">เผื่อสารสูญเสีย (%)</label>
+                <input type="number" id="gelOverflow" value="10" min="0" max="30" oninput="calcGel()" class="w-full bg-[#1f2335] border border-[#2e3347] rounded-lg p-2.5 text-sm font-mono">
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                    <h3 id="resTitle" class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-3">Resolving Gel</h3>
+                    <div id="resList" class="space-y-2 divide-y divide-[#252836]"></div>
+                </div>
+                <div class="bg-[#1a1d27] border border-[#2e3347] rounded-xl p-6 shadow-md">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#9aa3bb] mb-3">Stacking Gel (5%)</h3>
+                    <div id="stackList" class="space-y-2 divide-y divide-[#252836]"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Tab Switching
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const btns = document.querySelectorAll('.tab-btn');
+            tabs.forEach((tab, i) => {
+                if(i === index) {
+                    tab.classList.remove('hidden');
+                    tab.classList.add('grid');
+                } else {
+                    tab.classList.add('hidden');
+                    tab.classList.remove('grid');
+                }
+            });
+            btns.forEach((btn, i) => {
+                if(i === index) {
+                    btn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-[#1f2335] text-white border border-[#3a4570]";
+                } else {
+                    btn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-[#9aa3bb] hover:text-white";
+                }
+            });
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.getElementById('appBody');
+            body.classList.toggle('dark');
+        }
+
+        // TAB 1: Chemical Prep
+        function updateMW() {
+            const val = document.getElementById('chemSelect').value;
+            const customDiv = document.getElementById('customMWDiv');
+            if(val === 'custom') {
+                customDiv.classList.remove('hidden');
+            } else {
+                customDiv.classList.add('hidden');
+            }
+            calcChem();
+        }
+
+        function calcChem() {
+            const selectVal = document.getElementById('chemSelect').value;
+            let mw = selectVal === 'custom' ? parseFloat(document.getElementById('customMW').value) || 0 : parseFloat(selectVal);
+            let conc = parseFloat(document.getElementById('chemConc').value) || 0;
+            let concUnit = document.getElementById('chemConcUnit').value;
+            let vol = parseFloat(document.getElementById('chemVol').value) || 0;
+            let volUnit = document.getElementById('chemVolUnit').value;
+
+            let molar = conc;
+            if(concUnit === 'mM') molar = conc / 1000;
+            if(concUnit === 'µM') molar = conc / 1000000;
+
+            let liter = vol;
+            if(volUnit === 'mL') liter = vol / 1000;
+            if(volUnit === 'µL') liter = vol / 1000000;
+
+            let grams = molar * liter * mw;
+            let mg = grams * 1000;
+
+            document.getElementById('resG').innerText = grams.toFixed(4) + " g";
+            document.getElementById('resMg').innerText = mg.toFixed(2) + " mg";
+        }
+
+        // TAB 2: PCR
+        function calcPCR() {
+            let wells = parseFloat(document.getElementById('pcrWells').value) || 0;
+            let overflow = parseFloat(document.getElementById('pcrOverflow').value) || 0;
+            document.getElementById('pcrOverflowVal').innerText = `เผื่อ ${overflow}%`;
+
+            let totalRxns = wells * (1 + overflow / 100);
+
+            let components = [
+                {name: "Water", vol: parseFloat(document.getElementById('pcrWater').value) || 0},
+                {name: "2X Master Mix", vol: parseFloat(document.getElementById('pcrMix').value) || 0},
+                {name: "Forward Primer", vol: parseFloat(document.getElementById('pcrFw').value) || 0},
+                {name: "Reverse Primer", vol: parseFloat(document.getElementById('pcrRv').value) || 0},
+                {name: "Template DNA", vol: parseFloat(document.getElementById('pcrDna').value) || 0},
+            ];
+
+            let html = "";
+            let grandTotal = 0;
+            components.forEach(c => {
+                let totalV = c.vol * totalRxns;
+                grandTotal += totalV;
+                html += `<div class="flex justify-between py-2 text-sm"><span class="text-[#c9cdd8]">${c.name}</span><span class="font-mono font-semibold">${totalV.toFixed(1)} µL</span></div>`;
+            });
+            html += `<div class="flex justify-between pt-3 font-semibold text-base border-t-2 border-[#3a4570]"><span>รวมทั้งหมด</span><span class="font-mono text-indigo-400">${grandTotal.toFixed(1)} µL</span></div>`;
+            
+            document.getElementById('pcrResultList').innerHTML = html;
+        }
+
+        // TAB 3: Cell Seeding
+        function calcCell() {
+            let curr = parseFloat(document.getElementById('currDensity').value) || 1;
+            let target = parseFloat(document.getElementById('targetDensity').value) || 0;
+            let vTarget = parseFloat(document.getElementById('targetVol').value) || 0;
+
+            let vCellMl = (target * vTarget) / curr;
+            let vCellUl = vCellMl * 1000;
+            let vMedia = vTarget - vCellMl;
+
+            if(vCellMl > vTarget) {
+                document.getElementById('cellResultUl').innerText = "N/A";
+                document.getElementById('cellResultMl').innerText = "N/A";
+            } else {
+                document.getElementById('cellResultUl').innerText = vCellUl.toFixed(1) + " µL";
+                document.getElementById('cellResultMl').innerText = vMedia.toFixed(2) + " mL";
+            }
+        }
+
+        // TAB 4: MTT
+        function calcMTT() {
+            let vol = parseFloat(document.getElementById('mttVol').value) || 0;
+            let conc = parseFloat(document.getElementById('mttConc').value) || 0;
+            let mg = vol * conc;
+            document.getElementById('mttMg').innerText = mg.toFixed(1) + " mg";
+            document.getElementById('mttMl').innerText = vol.toFixed(1) + " mL";
+        }
+
+        // TAB 5: SDS-PAGE
+        const resolvingBases = {
+            8:  {"H₂O": [4.60, "mL"], "30% Acrylamide": [2.70, "mL"], "1.5M Tris pH 8.8": [2.50, "mL"], "10% SDS": [100, "µL"], "10% APS 🚨": [100, "µL"], "TEMED 🚨": [10, "µL"]},
+            10: {"H₂O": [4.00, "mL"], "30% Acrylamide": [3.30, "mL"], "1.5M Tris pH 8.8": [2.50, "mL"], "10% SDS": [100, "µL"], "10% APS 🚨": [100, "µL"], "TEMED 🚨": [10, "µL"]},
+            12: {"H₂O": [3.30, "mL"], "30% Acrylamide": [4.00, "mL"], "1.5M Tris pH 8.8": [2.50, "mL"], "10% SDS": [100, "µL"], "10% APS 🚨": [100, "µL"], "TEMED 🚨": [10, "µL"]}
+        };
+        const stackingBase = {"H₂O": [4.00, "mL"], "30% Acrylamide": [0.83, "mL"], "0.5M Tris pH 6.8": [0.63, "mL"], "10% SDS": [50, "µL"], "10% APS 🚨": [50, "µL"], "TEMED 🚨": [10, "µL"]};
+
+        function calcGel() {
+            let pct = document.getElementById('gelPct').value;
+            let thickScale = parseFloat(document.getElementById('gelThick').value);
+            let numGels = parseFloat(document.getElementById('gelNum').value) || 2;
+            let overflow = parseFloat(document.getElementById('gelOverflow').value) || 0;
+
+            let sf = (numGels / 2.0) * thickScale * (1 + overflow / 100.0);
+
+            // Resolving
+            let resObj = resolvingBases[pct];
+            let resHtml = "";
+            for(let key in resObj) {
+                let val = resObj[key][0] * sf;
+                let unit = resObj[key][1];
+                let isDanger = key.includes("🚨");
+                let colorCls = isDanger ? "text-red-400 font-bold" : "text-white";
+                resHtml += `<div class="flex justify-between py-1.5 text-sm"><span class="text-[#c9cdd8]">${key}</span><span class="font-mono ${colorCls}">${val.toFixed(2)} ${unit}</span></div>`;
+            }
+            document.getElementById('resTitle').innerText = `Resolving Gel (${pct}%)`;
+            document.getElementById('resList').innerHTML = resHtml;
+
+            // Stacking
+            let stackHtml = "";
+            for(let key in stackingBase) {
+                let val = stackingBase[key][0] * sf;
+                let unit = stackingBase[key][1];
+                let isDanger = key.includes("🚨");
+                let colorCls = isDanger ? "text-red-400 font-bold" : "text-white";
+                stackHtml += `<div class="flex justify-between py-1.5 text-sm"><span class="text-[#c9cdd8]">${key}</span><span class="font-mono ${colorCls}">${val.toFixed(2)} ${unit}</span></div>`;
+            }
+            document.getElementById('stackList').innerHTML = stackHtml;
+        }
+
+        // Initial Calculations on load
+        window.onload = function() {
+            calcChem();
+            calcPCR();
+            calcCell();
+            calcMTT();
+            calcGel();
+        };
+    </script>
+</body>
+</html>
